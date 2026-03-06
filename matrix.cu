@@ -9,11 +9,13 @@ void Matrix::fill_random() {
     std::random_device rd;
     std::mt19937 gen(rd());
     std::uniform_real_distribution<> dis(0.0, 1.0);
+    std::cout << "Filling matrix with random values..." << std::endl;
     for (size_t i = 0; i < rows_; ++i) {
         for (size_t j = 0; j < cols_; ++j) {
             data_[i * cols_ + j] = dis(gen);
         }
     }
+    std::cout << "Matrix filled with random values." << std::endl;
 }
 
 Matrix Matrix::naive_matmul(const Matrix& other) {
