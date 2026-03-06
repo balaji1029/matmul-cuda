@@ -13,11 +13,12 @@ void Matrix::fill_random() {
     }
 }
 
-Matrix& Matrix::naive_matmul(const Matrix& other) {
+Matrix Matrix::naive_matmul(const Matrix& other) {
     if (cols_ != other.rows_) {
         throw std::invalid_argument("Incompatible matrix dimensions for multiplication");
     }
     Matrix result(rows_, other.cols_);
+    
     for (size_t i = 0; i < rows_; ++i) {
         for (size_t j = 0; j < other.cols_; ++j) {
             float sum = 0.0f;
