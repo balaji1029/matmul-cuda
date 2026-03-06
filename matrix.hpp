@@ -4,6 +4,7 @@
 
 #include <vector>
 #include <random>
+#include <iostream>
 
 class Matrix {
     int rows_;
