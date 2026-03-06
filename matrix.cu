@@ -12,14 +12,12 @@ void Matrix::fill_random() {
     // std::cout << "Filling matrix with random values..." << std::endl;
     for (size_t i = 0; i < rows_; ++i) {
         for (size_t j = 0; j < cols_; ++j) {
-            // std::cout << "Data pointer: " << data_.data() << ", Index: (" << i << ", " << j << ")" << std::endl;
-            // std::cout << "Filling element (" << i << ", " << j << ")..." << std::endl;
             data_.at(i * cols_ + j) = static_cast<float>(rand()) / RAND_MAX; // dis(gen);
         }
     }
-    std::cout << "Copying matrix data to GPU..." << std::endl;
+    // std::cout << "Copying matrix data to GPU..." << std::endl;
     cudaMemcpy(device_data_, data_.data(), rows_ * cols_ * sizeof(float), cudaMemcpyHostToDevice);
-    std::cout << "Matrix filled with random values." << std::endl;
+    // std::cout << "Matrix filled with random values." << std::endl;
 }
 
 Matrix Matrix::naive_matmul(const Matrix& other) {
