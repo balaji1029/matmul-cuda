@@ -55,7 +55,7 @@ Matrix Matrix::cuda_matmul(const Matrix& other) {
     dim3 blockSize(16, 16);
     dim3 gridSize((other.cols_ + blockSize.x - 1) / blockSize.x, (rows_ + blockSize.y - 1) / blockSize.y);
     auto start = std::chrono::high_resolution_clock::now();
-    matmul_kernel<<<gridSize, blockSize>>>(data_[0], other.data_[0], result.data_[0], rows_, other.cols_, cols_);
+    matmul_kernel<<<gridSize, blockSize>>>(data_.data(), other.data_.data(), result.data_.data(), rows_, other.cols_, cols_);
     cudaDeviceSynchronize();
     auto end = std::chrono::high_resolution_clock::now();
     std::chrono::duration<double> elapsed = end - start;
