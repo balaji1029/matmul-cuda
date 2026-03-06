@@ -6,8 +6,8 @@
 
 
 void Matrix::fill_random() {
-    std::random_device rd;
-    std::mt19937 gen(rd());
+    // std::random_device rd;
+    std::mt19937 gen(42);
     std::uniform_real_distribution<> dis(0.0, 1.0);
     std::cout << "Filling matrix with random values..." << std::endl;
     for (size_t i = 0; i < rows_; ++i) {
