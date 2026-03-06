@@ -2,6 +2,7 @@
 
 #include <iostream>
 #include <chrono>
+#include <cuda_runtime.h>
 
 
 void Matrix::fill_random() {
@@ -32,7 +33,33 @@ Matrix Matrix::naive_matmul(const Matrix& other) {
     }
     auto end = std::chrono::high_resolution_clock::now();
     std::chrono::duration<double> elapsed = end - start;
-    // Log the time taken for the multiplication
-    std::cout << "Time taken for naive matrix multiplication: " << elapsed.count() << " seconds" << std::endl;
+    // Log the time taken for the multiplication in nanoseconds
+    std::cout << "Naive matrix multiplication took " << elapsed.count() * 1e9 << " nanoseconds" << std::endl;
+    return result;
+}
+
+__global__ void matmul_kernel(const float* A, const float* B, float* C, size_t M, size_t N, size_t K) {
+    int row = blockIdx.y * blockDim.y + threadIdx.y;
+    int col = blockIdx.x * blockDim.x + threadIdx.x;
+    if (row < M && col < N) {
+        float sum = 0.0f;
+        for (size_t k = 0; k < K; ++k) {
+            sum += A[row * K + k] * B[k * N + col];
+        }
+        C[row * N + col] = sum;
+    }
+}
+
+Matrix Matrix::cuda_matmul(const Matrix& other) {
+    Matrix result(rows_, other.cols_);
+    dim3 blockSize(16, 16);
+    dim3 gridSize((other.cols_ + blockSize.x - 1) / blockSize.x, (rows_ + blockSize.y - 1) / blockSize.y);
+    auto start = std::chrono::high_resolution_clock::now();
+    matmul_kernel<<<gridSize, blockSize>>>(data_[0], other.data_[0], result.data_[0], rows_, other.cols_, cols_);
+    cudaDeviceSynchronize();
+    auto end = std::chrono::high_resolution_clock::now();
+    std::chrono::duration<double> elapsed = end - start;
+    // Log the time taken for the multiplication in nanoseconds
+    std::cout << "CUDA matrix multiplication took " << elapsed.count() * 1e9 << " nanoseconds" << std::endl;
     return result;
 }

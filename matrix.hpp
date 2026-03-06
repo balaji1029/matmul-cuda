@@ -17,4 +17,5 @@ public:
     const std::vector<float>& operator[](size_t index) const { return data_[index]; }
     std::vector<float>& operator[](size_t index) { return data_[index]; }
     Matrix naive_matmul(const Matrix& other);
+    Matrix cuda_matmul(const Matrix& other);
 };
