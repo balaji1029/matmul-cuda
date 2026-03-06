@@ -18,7 +18,7 @@ void Matrix::fill_random() {
         }
     }
     std::cout << "Copying matrix data to GPU..." << std::endl;
-    // cudaMemcpy(device_data_, data_.data(), rows_ * cols_ * sizeof(float), cudaMemcpyHostToDevice);
+    cudaMemcpy(device_data_, data_.data(), rows_ * cols_ * sizeof(float), cudaMemcpyHostToDevice);
     std::cout << "Matrix filled with random values." << std::endl;
 }
 
@@ -45,26 +45,26 @@ Matrix Matrix::naive_matmul(const Matrix& other) {
     return result;
 }
 
-// __global__ void matmul_kernel(const float* A, const float* B, float* C, size_t M, size_t N, size_t K) {
-//     int row = blockIdx.y * blockDim.y + threadIdx.y;
-//     int col = blockIdx.x * blockDim.x + threadIdx.x;
-//     if (row < M && col < N) {
-//         float sum = 0.0f;
-//         for (size_t k = 0; k < K; ++k) {
-//             sum += A[row * K + k] * B[k * N + col];
-//         }
-//         C[row * N + col] = sum;
-//     }
-// }
+__global__ void matmul_kernel(const float* A, const float* B, float* C, size_t M, size_t N, size_t K) {
+    int row = blockIdx.y * blockDim.y + threadIdx.y;
+    int col = blockIdx.x * blockDim.x + threadIdx.x;
+    if (row < M && col < N) {
+        float sum = 0.0f;
+        for (size_t k = 0; k < K; ++k) {
+            sum += A[row * K + k] * B[k * N + col];
+        }
+        C[row * N + col] = sum;
+    }
+}
 
 Matrix Matrix::cuda_matmul(const Matrix& other) {
     Matrix result(rows_, other.cols_);
-    // dim3 blockSize(16, 16);
-    // dim3 gridSize((other.cols_ + blockSize.x - 1) / blockSize.x, (rows_ + blockSize.y - 1) / blockSize.y);
-    // std::cout << "Launching CUDA kernel with grid size (" << gridSize.x << ", " << gridSize.y << ") and block size (" << blockSize.x << ", " << blockSize.y << ")" << std::endl;
+    dim3 blockSize(16, 16);
+    dim3 gridSize((other.cols_ + blockSize.x - 1) / blockSize.x, (rows_ + blockSize.y - 1) / blockSize.y);
+    std::cout << "Launching CUDA kernel with grid size (" << gridSize.x << ", " << gridSize.y << ") and block size (" << blockSize.x << ", " << blockSize.y << ")" << std::endl;
     auto start = std::chrono::high_resolution_clock::now();
-    // matmul_kernel<<<gridSize, blockSize>>>(device_data_, other.device_data_, result.device_data_, rows_, other.cols_, cols_);
-    // cudaDeviceSynchronize();
+    matmul_kernel<<<gridSize, blockSize>>>(device_data_, other.device_data_, result.device_data_, rows_, other.cols_, cols_);
+    cudaDeviceSynchronize();
     auto end = std::chrono::high_resolution_clock::now();
     std::chrono::duration<double> elapsed = end - start;
     // Log the time taken for the multiplication in nanoseconds
