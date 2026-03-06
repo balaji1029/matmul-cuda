@@ -20,6 +20,7 @@ Matrix Matrix::naive_matmul(const Matrix& other) {
     if (cols_ != other.rows_) {
         throw std::invalid_argument("Incompatible matrix dimensions for multiplication");
     }
+    std::cout << "Performing naive matrix multiplication..." << std::endl;
     Matrix result(rows_, other.cols_);
     auto start = std::chrono::high_resolution_clock::now();
     for (size_t i = 0; i < rows_; ++i) {
