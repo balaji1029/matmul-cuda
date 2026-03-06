@@ -55,6 +55,21 @@ __global__ void matmul_kernel(const float* A, const float* B, float* C, size_t M
     }
 }
 
+Matrix Matrix::uncoalesced_cuda_matmul(const Matrix& other) {
+    Matrix result(rows_, other.cols_);
+    dim3 blockSize(16, 16);
+    dim3 gridSize((other.cols_ + blockSize.x - 1) / blockSize.x, (rows_ + blockSize.y - 1) / blockSize.y);
+    std::cout << "Launching uncoalesced CUDA kernel with grid size (" << gridSize.x << ", " << gridSize.y << ") and block size (" << blockSize.x << ", " << blockSize.y << ")" << std::endl;
+    auto start = std::chrono::high_resolution_clock::now();
+    uncoalesced_matmul_kernel<<<gridSize, blockSize>>>(device_data_, other.device_data_, result.device_data_, rows_, other.cols_, cols_);
+    cudaDeviceSynchronize();
+    auto end = std::chrono::high_resolution_clock::now();
+    std::chrono::duration<double> elapsed = end - start;
+    // Log the time taken for the multiplication in nanoseconds
+    std::cout << "Uncoalesced CUDA matrix multiplication took " << elapsed.count() * 1e9 << " nanoseconds" << std::endl;
+    return result;
+}
+
 Matrix Matrix::cuda_matmul(const Matrix& other) {
     Matrix result(rows_, other.cols_);
     dim3 blockSize(16, 16);
