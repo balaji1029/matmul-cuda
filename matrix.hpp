@@ -15,11 +15,11 @@ class Matrix {
 public:
     Matrix(size_t rows, size_t cols) : rows_(rows), cols_(cols), data_(rows * cols) {
         // data_ = new float[rows_ * cols_];
-        cudaMalloc(&device_data_, rows_ * cols_ * sizeof(float));
+        // cudaMalloc(&device_data_, rows_ * cols_ * sizeof(float));
         fill_random();
     }
     ~Matrix() {
-        cudaFree(device_data_);
+        // cudaFree(device_data_);
     }
     size_t rows() const { return rows_; }
     size_t cols() const { return cols_; }
