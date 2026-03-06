@@ -56,12 +56,12 @@ __global__ void matmul_kernel(const float* A, const float* B, float* C, size_t M
 }
 
 __global__ void uncoalesced_matmul_kernel(const float* A, const float* B, float* C, size_t M, size_t N, size_t K) {
-    int row = blockIdx.y * blockDim.y + threadIdx.y;
-    int col = blockIdx.x * blockDim.x + threadIdx.x;
+    int col = blockIdx.y * blockDim.y + threadIdx.y;
+    int row = blockIdx.x * blockDim.x + threadIdx.x;
     if (row < M && col < N) {
         float sum = 0.0f;
         for (size_t k = 0; k < K; ++k) {
-            sum += A[row * K + k] * B[col * K + k]; // Access B in a non-coalesced manner
+            sum += A[row * K + k] * B[k * N + col];
         }
         C[row * N + col] = sum;
     }
