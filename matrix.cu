@@ -7,12 +7,12 @@
 
 void Matrix::fill_random() {
     // std::random_device rd;
-    std::mt19937 gen(42);
-    std::uniform_real_distribution<> dis(0.0, 1.0);
+    // std::mt19937 gen(42);
+    // std::uniform_real_distribution<> dis(0.0, 1.0);
     std::cout << "Filling matrix with random values..." << std::endl;
     for (size_t i = 0; i < rows_; ++i) {
         for (size_t j = 0; j < cols_; ++j) {
-            data_[i * cols_ + j] = static_cast<float>(dis(gen));
+            data_[i * cols_ + j] = rand() / static_cast<float>(RAND_MAX); // dis(gen);
         }
     }
     std::cout << "Copying matrix data to GPU..." << std::endl;
