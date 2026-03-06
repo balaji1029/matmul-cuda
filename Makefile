@@ -11,3 +11,8 @@ matrix.o: matrix.cu
 
 main.o: main.cpp
 	$(CXX) $(CXXFLAGS) -c main.cpp -o main.o
+
+.PHONY: clean
+
+clean:
+	rm -f *.o main
