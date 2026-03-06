@@ -1,11 +1,13 @@
+CXX = nvcc
+CXXFLAGS = -O3
 
 TARGET: main
 
 main: main.o matrix.o
-	nvcc main.o matrix.o -o main
+	$(CXX) $(CXXFLAGS) main.o matrix.o -o main
 
 matrix.o: matrix.cu
-	nvcc -c matrix.cu -o matrix.o
+	$(CXX) $(CXXFLAGS) -c matrix.cu -o matrix.o
 
 main.o: main.cpp
-	nvcc -c main.cpp -o main.o
+	$(CXX) $(CXXFLAGS) -c main.cpp -o main.o
