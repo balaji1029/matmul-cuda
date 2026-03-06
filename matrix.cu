@@ -54,6 +54,7 @@ Matrix Matrix::cuda_matmul(const Matrix& other) {
     Matrix result(rows_, other.cols_);
     dim3 blockSize(16, 16);
     dim3 gridSize((other.cols_ + blockSize.x - 1) / blockSize.x, (rows_ + blockSize.y - 1) / blockSize.y);
+    std::cout << "Launching CUDA kernel with grid size (" << gridSize.x << ", " << gridSize.y << ") and block size (" << blockSize.x << ", " << blockSize.y << ")" << std::endl;
     auto start = std::chrono::high_resolution_clock::now();
     matmul_kernel<<<gridSize, blockSize>>>(data_, other.data_, result.data_, rows_, other.cols_, cols_);
     cudaDeviceSynchronize();
@@ -61,6 +62,5 @@ Matrix Matrix::cuda_matmul(const Matrix& other) {
     std::chrono::duration<double> elapsed = end - start;
     // Log the time taken for the multiplication in nanoseconds
     std::cout << "CUDA matrix multiplication took " << elapsed.count() * 1e9 << " nanoseconds" << std::endl;
-    
     return result;
 }
