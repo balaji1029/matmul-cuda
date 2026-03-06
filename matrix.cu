@@ -14,12 +14,11 @@ void Matrix::fill_random() {
         for (size_t j = 0; j < cols_; ++j) {
             std::cout << "Data pointer: " << data_ << ", Index: (" << i << ", " << j << ")" << std::endl;
             std::cout << "Filling element (" << i << ", " << j << ")..." << std::endl;
-            // data_[i * cols_ + j] = rand() / static_cast<float>(RAND_MAX); // dis(gen);
-            *(data_ + i * cols_ + j) = static_cast<float>(i * cols_ + j); // Fill with deterministic values for easier debugging
+            data_.at(i * cols_ + j) = static_cast<float>(rand()) / RAND_MAX; // dis(gen);
         }
     }
     std::cout << "Copying matrix data to GPU..." << std::endl;
-    cudaMemcpy(device_data_, data_, rows_ * cols_ * sizeof(float), cudaMemcpyHostToDevice);
+    cudaMemcpy(device_data_, data_.data(), rows_ * cols_ * sizeof(float), cudaMemcpyHostToDevice);
     std::cout << "Matrix filled with random values." << std::endl;
 }
 
