@@ -14,7 +14,8 @@ void Matrix::fill_random() {
         for (size_t j = 0; j < cols_; ++j) {
             std::cout << "Data pointer: " << data_ << ", Index: (" << i << ", " << j << ")" << std::endl;
             std::cout << "Filling element (" << i << ", " << j << ")..." << std::endl;
-            data_[i * cols_ + j] = rand() / static_cast<float>(RAND_MAX); // dis(gen);
+            // data_[i * cols_ + j] = rand() / static_cast<float>(RAND_MAX); // dis(gen);
+            data_[i * cols_ + j] = static_cast<float>(i * cols_ + j); // Fill with deterministic values for easier debugging
         }
     }
     std::cout << "Copying matrix data to GPU..." << std::endl;
