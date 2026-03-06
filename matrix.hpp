@@ -13,7 +13,9 @@ class Matrix {
 public:
     Matrix(size_t rows, size_t cols) : rows_(rows), cols_(cols) {
         cudaMalloc(&data_, rows_ * cols_ * sizeof(float));
+        std::cout << "Filling matrix with random values..." << std::endl;
         fill_random();
+        std::cout << "Created matrix of size " << rows_ << "x" << cols_ << std::endl;
     }
     ~Matrix() {
         cudaFree(data_);
