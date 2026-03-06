@@ -10,16 +10,17 @@ class Matrix {
     int rows_;
     int cols_;
     float* data_;
+    float* device_data_;
     void fill_random();
 public:
     Matrix(size_t rows, size_t cols) : rows_(rows), cols_(cols) {
-        cudaMalloc(&data_, rows_ * cols_ * sizeof(float));
-        std::cout << "Filling matrix with random values..." << std::endl;
+        data_ = new float[rows_ * cols_];
+        cudaMalloc(&device_data_, rows_ * cols_ * sizeof(float));
         fill_random();
-        std::cout << "Created matrix of size " << rows_ << "x" << cols_ << std::endl;
     }
     ~Matrix() {
-        cudaFree(data_);
+        delete[] data_;
+        cudaFree(device_data_);
     }
     size_t rows() const { return rows_; }
     size_t cols() const { return cols_; }

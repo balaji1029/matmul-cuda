@@ -12,9 +12,10 @@ void Matrix::fill_random() {
     std::cout << "Filling matrix with random values..." << std::endl;
     for (size_t i = 0; i < rows_; ++i) {
         for (size_t j = 0; j < cols_; ++j) {
-            data_[i * cols_ + j] = dis(gen);
+            data_[i * cols_ + j] = static_cast<float>(dis(gen));
         }
     }
+    cudaMemcpy(device_data_, data_, rows_ * cols_ * sizeof(float), cudaMemcpyHostToDevice);
     std::cout << "Matrix filled with random values." << std::endl;
 }
 
