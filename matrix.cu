@@ -15,6 +15,7 @@ void Matrix::fill_random() {
             data_[i * cols_ + j] = static_cast<float>(dis(gen));
         }
     }
+    std::cout << "Copying matrix data to GPU..." << std::endl;
     cudaMemcpy(device_data_, data_, rows_ * cols_ * sizeof(float), cudaMemcpyHostToDevice);
     std::cout << "Matrix filled with random values." << std::endl;
 }
