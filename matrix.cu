@@ -11,7 +11,7 @@ void Matrix::fill_random() {
     std::uniform_real_distribution<> dis(0.0, 1.0);
     for (size_t i = 0; i < rows_; ++i) {
         for (size_t j = 0; j < cols_; ++j) {
-            data_[i][j] = dis(gen);
+            data_[i * cols_ + j] = dis(gen);
         }
     }
 }
@@ -26,9 +26,9 @@ Matrix Matrix::naive_matmul(const Matrix& other) {
         for (size_t j = 0; j < other.cols_; ++j) {
             float sum = 0.0f;
             for (size_t k = 0; k < cols_; ++k) {
-                sum += data_[i][k] * other[k][j];
+                sum += data_[i * cols_ + k] * other[k * other.cols_ + j];
             }
-            result[i][j] = sum;
+            result[i * result.cols_ + j] = sum;
         }
     }
     auto end = std::chrono::high_resolution_clock::now();
