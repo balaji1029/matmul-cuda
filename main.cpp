@@ -9,5 +9,6 @@ int main() {
     // std::cout << "Matrix A: " << A.rows() << "x" << A.cols() << std::endl;
     Matrix C = A.naive_matmul(B);
     Matrix D = A.cuda_matmul(B);
+    Matrix E = A.uncoalesced_cuda_matmul(B);
     return 0;
 }
