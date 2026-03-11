@@ -84,8 +84,8 @@ Matrix Matrix::uncoalesced_cuda_matmul(const Matrix& other) {
 
 Matrix Matrix::cuda_matmul(const Matrix& other) {
     Matrix result(rows_, other.cols_);
-    dim3 blockSize(16, 16);
-    dim3 gridSize((other.cols_ + blockSize.x - 1) / blockSize.x, (rows_ + blockSize.y - 1) / blockSize.y);
+    dim3 gridSize(cuda::ceil_div(rows_, 32), cuda::ceil_div(other.cols_, 32));
+    dim3 blockSize(32, 32);
     std::cout << "Launching CUDA kernel with grid size (" << gridSize.x << ", " << gridSize.y << ") and block size (" << blockSize.x << ", " << blockSize.y << ")" << std::endl;
     auto start = std::chrono::high_resolution_clock::now();
     matmul_kernel<<<gridSize, blockSize>>>(device_data_, other.device_data_, result.device_data_, rows_, other.cols_, cols_);
