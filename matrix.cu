@@ -44,8 +44,8 @@ Matrix Matrix::naive_matmul(const Matrix& other) {
 }
 
 __global__ void matmul_kernel(const float* A, const float* B, float* C, size_t M, size_t N, size_t K) {
-    int row = (blockIdx.y * BLOCKSIZE) + (threadIdx.x % BLOCKSIZE);
-    int col = (blockIdx.x * BLOCKSIZE) + (threadIdx.x / BLOCKSIZE);
+    int row = (blockIdx.y * 32) + (threadIdx.x % 32);
+    int col = (blockIdx.x * 32) + (threadIdx.x / 32);
     if (row < M && col < N) {
         float sum = 0.0f;
         for (size_t k = 0; k < K; ++k) {
@@ -84,7 +84,7 @@ Matrix Matrix::uncoalesced_cuda_matmul(const Matrix& other) {
 
 Matrix Matrix::cuda_matmul(const Matrix& other) {
     Matrix result(rows_, other.cols_);
-    dim3 gridSize(cuda::ceil_div(rows_, 32), cuda::ceil_div(other.cols_, 32));
+    dim3 gridSize(rows_ / 32 + 1, other.cols_ / 32 + 1);
     dim3 blockSize(32, 32);
     std::cout << "Launching CUDA kernel with grid size (" << gridSize.x << ", " << gridSize.y << ") and block size (" << blockSize.x << ", " << blockSize.y << ")" << std::endl;
     auto start = std::chrono::high_resolution_clock::now();
