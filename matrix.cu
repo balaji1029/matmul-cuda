@@ -44,8 +44,8 @@ Matrix Matrix::naive_matmul(const Matrix& other) {
 }
 
 __global__ void matmul_kernel(const float* A, const float* B, float* C, size_t M, size_t N, size_t K) {
-    int row = blockIdx.y * blockDim.y + threadIdx.y;
-    int col = blockIdx.x * blockDim.x + threadIdx.x;
+    int row = (blockIdx.y * BLOCK_SIZE) + (threadIdx.x % BLOCK_SIZE);
+    int col = (blockIdx.x * BLOCK_SIZE) + (threadIdx.x / BLOCK_SIZE);
     if (row < M && col < N) {
         float sum = 0.0f;
         for (size_t k = 0; k < K; ++k) {
