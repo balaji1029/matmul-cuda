@@ -203,7 +203,7 @@ __global__ void tiling_matmul_kernel(const float* A, const float* B, float* C, s
         int tileBx = globalX;
         int tileBy = i * BLOCK_SIZE + localY;
 
-        tileA[localY * BLOCK_SIZE + localX] = (tileBx < K && tileBy < N) ? B[tileBy * BLOCK_SIZE + tileBx] : 0.0f;
+        tileB[localY * BLOCK_SIZE + localX] = (tileBx < K && tileBy < N) ? B[tileBy * BLOCK_SIZE + tileBx] : 0.0f;
 
         __syncthreads();
 
