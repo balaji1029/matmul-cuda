@@ -183,6 +183,53 @@ __global__ void uncoalesced_matmul_kernel(const float* A, const float* B, float*
     }
 }
 
+__global__ void tiling_matmul_row_based_kernel(const float* A, const float* B, float* C, size_t M, size_t N, size_t K) {
+    __shared__ float tileA[BLOCK_SIZE * BLOCK_SIZE];
+    __shared__ float tileB[BLOCK_SIZE * CEIL_DIV(K, BLOCK_SIZE) * BLOCK_SIZE];
+    int localX = threadIdx.x;
+    int localY = threadIdx.y;
+
+    int globalX = blockDim.x * blockIdx.x + localX;
+    int globalY = blockDim.y * blockIdx.y + localY;
+
+    int numTiles = CEIL_DIV(K, BLOCK_SIZE);
+
+    float ans[CEIL_DIV(K, BLOCK_SIZE)] = {0.0f};
+
+    for (int i = 0; i < numTiles; i++) {
+        int tileAx = i * BLOCK_SIZE + localX;
+        int tileAy = globalY;
+
+        tileA[localY * BLOCK_SIZE + localX] = (tileAx < M && tileAy < K) ? A[tileAy * K + tileAx] : 0.0f;
+
+        int tileBx = globalX;
+        int tileBy = i * BLOCK_SIZE + localY;
+        int tileByt = i * BLOCK_SIZE + localY;
+
+        for (int t = 0; t < numTiles - 1; t++) {
+            int tileBxt = t * BLOCK_SIZE + localX;
+            tileB[localY * numTiles * BLOCK_SIZE + t * BLOCK_SIZE + localX] = B[tileByt * N + tileBxt];
+        }
+
+        int tileBxt = (numTiles - 1) * BLOCK_SIZE + localX;
+        tileB[localY * numTiles * BLOCK_SIZE + (numTiles - 1) * BLOCK_SIZE + localX] = (tileBxt < K && tileByt < N) ? B[tileByt * N + tileBxt] : 0.0f;
+
+        __syncthreads();
+
+        for (int j = 0; j < BLOCK_SIZE; j++) {
+            for (int t = 0; t < numTiles; t++) {
+                ans[t] += tileA[localY * BLOCK_SIZE + j] * tileB[j * BLOCK_SIZE + (localX + t * BLOCK_SIZE)];
+            }
+        }
+
+        __syncthreads();
+    }
+
+    if (globalX < M && globalY < N)
+        for (int t = 0; t < numTiles; t++)
+            C[globalY * N + globalX] += ans[t];
+}
+
 __global__ void tiling_matmul_kernel(const float* A, const float* B, float* C, size_t M, size_t N, size_t K) {
     __shared__ float tileA[BLOCK_SIZE * BLOCK_SIZE];
     __shared__ float tileB[BLOCK_SIZE * BLOCK_SIZE];
@@ -287,6 +334,30 @@ Matrix Matrix::tiling_matmul(const Matrix& other) {
     auto start = std::chrono::high_resolution_clock::now();
 
     tiling_matmul_kernel << < gridSize, blockSize >> > (device_data_, other.device_data_, result.device_data_, rows_, other.cols(), cols_);
+
+    cudaDeviceSynchronize();
+
+    auto end = std::chrono::high_resolution_clock::now();
+    cudaError_t err = cudaGetLastError();
+    if (err != cudaSuccess) {
+        std::cerr << "CUDA kernel launch failed: " << cudaGetErrorString(err) << std::endl;
+    }
+    std::chrono::duration<double> elapsed = end - start;
+    result.copy_to_host();
+    // Log the time taken for the multiplication in nanoseconds
+    std::cout << "Tiling CUDA matrix multiplication took " << elapsed.count() * 1e9 << " nanoseconds" << std::endl;
+    result.copy_to_host();
+    return result;
+}
+
+Matrix Matrix::tiling_matmul_row_based(const Matrix& other) {
+    Matrix result(rows_, other.cols_);
+    dim3 blockSize(BLOCK_SIZE, BLOCK_SIZE);
+    dim3 gridSize(CEIL_DIV(rows_, BLOCK_SIZE), CEIL_DIV(other.cols_, BLOCK_SIZE));
+    std::cout << "Launching tiling CUDA kernel with grid size (" << gridSize.x << ", " << gridSize.y << ") and block size (" << blockSize.x << ", " << blockSize.y << ")" << std::endl;
+    auto start = std::chrono::high_resolution_clock::now();
+
+    tiling_matmul_row_based_kernel << < gridSize, blockSize >> > (device_data_, other.device_data_, result.device_data_, rows_, other.cols(), cols_);
 
     cudaDeviceSynchronize();
 
