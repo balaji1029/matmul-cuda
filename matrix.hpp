@@ -18,8 +18,33 @@ public:
         cudaMalloc(&device_data_, rows_ * cols_ * sizeof(float));
         fill_random();
     }
+    Matrix(Matrix&& other) noexcept
+        : rows_(other.rows_),
+          cols_(other.cols_),
+          data_(std::move(other.data_)),
+          device_data_(other.device_data_)
+    {
+        other.device_data_ = nullptr;
+    }
+
+    Matrix& operator=(Matrix&& other) noexcept {
+        if (this != &other) {
+            cudaFree(device_data_);
+
+            rows_ = other.rows_;
+            cols_ = other.cols_;
+            data_ = std::move(other.data_);
+            device_data_ = other.device_data_;
+
+            other.device_data_ = nullptr;
+        }
+        return *this;
+    }
+
     ~Matrix() {
-        cudaFree(device_data_);
+        if (device_data_) {
+            cudaFree(device_data_);
+        }
     }
     size_t rows() const { return rows_; }
     size_t cols() const { return cols_; }

@@ -13,7 +13,7 @@ int main() {
         std::cout << "D not equal" << std::endl;
     }
     Matrix E = A.cuda_matmul(B);
-    if (D != C) {
+    if (E != C) {
         std::cout << "E not equal" << std::endl;
     }
     Matrix F = A.uncoalesced_cuda_matmul(B);
