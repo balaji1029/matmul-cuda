@@ -36,3 +36,6 @@ public:
         cudaMemcpy(data_.data(), device_data_, rows_ * cols_ * sizeof(float), cudaMemcpyDeviceToHost);
     }
 };
+
+bool operator==(const Matrix& A, const Matrix& B);
+bool operator!=(const Matrix& A, const Matrix& B);
