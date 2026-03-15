@@ -28,5 +28,9 @@ int main(int argc, char** argv) {
     if (F != D) {
         std::cout << "F not equal" << std::endl;
     }
+    Matrix G = A.cuBLAS(B);
+    if (G != D) {
+        std::cout << "G not equal" << std::endl;
+    }
     return 0;
 }

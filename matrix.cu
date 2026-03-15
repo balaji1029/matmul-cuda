@@ -3,6 +3,7 @@
 #include <iostream>
 #include <chrono>
 #include <cuda_runtime.h>
+#include <cublas_v2.h>
 
 #define BLOCK_SIZE 32
 #define CEIL_DIV(a, b) (((a) + (b) - 1) / (b))
@@ -43,6 +44,61 @@ Matrix Matrix::naive_matmul(const Matrix& other) {
     std::chrono::duration<double> elapsed = end - start;
     // Log the time taken for the multiplication in nanoseconds
     std::cout << "Naive matrix multiplication took " << elapsed.count() * 1e9 << " nanoseconds" << std::endl;
+    return result;
+}
+
+// __global__void tiling_matmul_kernel(const float* A, const float* B, float* C, size_t M, size_t N, size_t K) {
+//     __shared__ float tileA[BLOCK_SIZE][BLOCK_SIZE];
+//     __shared__ float tileB[BLOCK_SIZE][BLOCK_SIZE];
+
+//     int globalStartRow = blockIdx.y * BLOCK_SIZE;
+//     int globalStartCol = blockIdx.x * BLOCK_SIZE;
+
+//     int localRow = threadIdx.y;
+//     int localCol = threadIdx.x;
+
+
+// }
+
+Matrix Matrix::cuBLAS(const Matrix& other) {
+    if (cols_ != other.rows_) {
+        throw std::invalid_argument("Incompatible matrix dimensions");
+    }
+
+    Matrix result(rows_, other.cols_);
+
+    cublasHandle_t handle;
+    cublasCreate(&handle);
+
+    float alpha = 1.0f;
+    float beta = 0.0f;
+
+    // C = A * B
+    // cuBLAS expects column-major, so we compute:
+    // C^T = B^T * A^T
+
+    cublasSgemm(
+        handle,
+        CUBLAS_OP_N, CUBLAS_OP_N,
+        rows_,                 // m
+        other.cols_,           // n
+        cols_,                 // k
+        &alpha,
+        device_data_,          // A
+        rows_,
+        other.device_data_,    // B
+        cols_,
+        &beta,
+        result.device_data_,   // C
+        rows_
+    );
+
+    cudaDeviceSynchronize();
+
+    result.copy_to_host();
+
+    cublasDestroy(handle);
+
     return result;
 }
 
@@ -140,6 +196,27 @@ Matrix Matrix::another_matmul(const Matrix& other) {
     result.copy_to_host();
     // Log the time taken for the multiplication in nanoseconds
     std::cout << "Another CUDA matrix multiplication took " << elapsed.count() * 1e9 << " nanoseconds" << std::endl;
+    return result;
+}
+
+Matrix Matrix::transpose(const Matrix& other) {
+    Matrix result(other.cols(), other.rows());
+    for (size_t i = 0; i < other.rows(); ++i) {
+        for (size_t j = 0; j < other.cols(); ++j) {
+            result[j * result.cols() + i] = other[i * other.cols() + j];
+        }
+    }
+    return result;
+}
+
+Matrix Matrix::cuBLAS(const Matrix& other) {
+    // Run cuBLAS matrix multiplication here
+    cublasStatus_t stat;
+    cublasHandle_t handle;
+    stat = cublasCreate(&handle);
+    stat = cublasSetMatrix (M, N, sizeof(*a), a, M, devPtrA, M);
+
+
     return result;
 }
 

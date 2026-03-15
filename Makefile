@@ -2,7 +2,7 @@ CXX = g++
 NVCC = nvcc
 
 CXXFLAGS = -O3
-NVFLAGS = -O3
+NVFLAGS = -O3 -lcublas
 
 TARGET = main
 

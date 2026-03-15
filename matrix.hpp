@@ -54,6 +54,8 @@ public:
     Matrix uncoalesced_cuda_matmul(const Matrix& other);
     Matrix another_matmul(const Matrix& other);
     Matrix cuda_matmul(const Matrix& other);
+    Matrix cuBLAS(const Matrix& other);
+    Matrix transpose(const Matrix& other);
     void copy_to_device() {
         cudaMemcpy(device_data_, data_.data(), rows_ * cols_ * sizeof(float), cudaMemcpyHostToDevice);
     }
