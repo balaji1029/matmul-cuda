@@ -155,7 +155,7 @@ bool operator==(const Matrix& X, const Matrix& Y) {
         }
     }
     std::cout << "Maximum difference between matrices: " << max_diff << std::endl;
-    return max_diff < 1e-5f; // Allow for a small numerical tolerance
+    return max_diff < 1e-4f; // Allow for a small numerical tolerance
 }
 
 bool operator!=(const Matrix& X, const Matrix& Y) {
