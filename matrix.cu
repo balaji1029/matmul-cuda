@@ -59,8 +59,10 @@ __global__ void matmul_kernel(const float* A, const float* B, float* C, size_t M
 }
 
 __global__ void another_matmul_kernel(const float* A, const float* B, float* C, size_t M, size_t N, size_t K) {
-    int x = (blockIdx.x * BLOCK_SIZE) + (threadIdx.x % BLOCK_SIZE);
-    int y = (blockIdx.y * BLOCK_SIZE) + (threadIdx.x / BLOCK_SIZE);
+    int tid = threadIdx.x + threadIdx.y * blockDim.x;
+
+    int x = (blockIdx.x * BLOCK_SIZE) + (tid % BLOCK_SIZE);
+    int y = (blockIdx.y * BLOCK_SIZE) + (tid / BLOCK_SIZE);
     if (x < M && y < N) {
         float sum = 0.0f;
         for (size_t k = 0; k < K; ++k) {
