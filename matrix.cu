@@ -147,12 +147,15 @@ bool operator==(const Matrix& X, const Matrix& Y) {
     if (X.rows() != Y.rows() || X.cols() != Y.cols()) {
         return false;
     }
+    float max_diff = 0.0f;
     for (size_t i = 0; i < X.rows() * X.cols(); ++i) {
-        if (std::abs(X[i] - Y[i]) > 1e-5) {
-            return false;
+        float diff = std::abs(X[i] - Y[i]);
+        if (diff > max_diff) {
+            max_diff = diff;
         }
     }
-    return true;
+    std::cout << "Maximum difference between matrices: " << max_diff << std::endl;
+    return max_diff < 1e-5f; // Allow for a small numerical tolerance
 }
 
 bool operator!=(const Matrix& X, const Matrix& Y) {
