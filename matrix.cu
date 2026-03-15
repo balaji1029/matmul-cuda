@@ -44,26 +44,26 @@ Matrix Matrix::naive_matmul(const Matrix& other) {
 }
 
 __global__ void matmul_kernel(const float* A, const float* B, float* C, size_t M, size_t N, size_t K) {
-    int row = (blockIdx.y * 32) + (threadIdx.x % 32);
-    int col = (blockIdx.x * 32) + (threadIdx.x / 32);
-    if (row < M && col < N) {
+    int x = (blockIdx.x * 32) + (threadIdx.x / 32);
+    int y = (blockIdx.y * 32) + (threadIdx.x % 32);
+    if (x < M && y < N) {
         float sum = 0.0f;
         for (size_t k = 0; k < K; ++k) {
-            sum += A[row * K + k] * B[k * N + col];
+            sum += A[x * K + k] * B[k * N + y];
         }
-        C[row * N + col] = sum;
+        C[x * N + y] = sum;
     }
 }
 
 __global__ void uncoalesced_matmul_kernel(const float* A, const float* B, float* C, size_t M, size_t N, size_t K) {
-    int col = blockIdx.y * blockDim.y + threadIdx.y;
-    int row = blockIdx.x * blockDim.x + threadIdx.x;
-    if (row < M && col < N) {
+    int x = blockIdx.x * blockDim.x + threadIdx.x;
+    int y = blockIdx.y * blockDim.y + threadIdx.y;
+    if (x < M && y   < N) {
         float sum = 0.0f;
         for (size_t k = 0; k < K; ++k) {
-            sum += A[row * K + k] * B[k * N + col];
+            sum += A[x * K + k] * B[k * N + y];
         }
-        C[row * N + col] = sum;
+        C[x * N + y] = sum;
     }
 }
 
