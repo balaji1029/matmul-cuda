@@ -201,7 +201,7 @@ __global__ void tiling_matmul_row_based_kernel(const float* A, const float* B, f
         int tileAx = i * BLOCK_SIZE + localX;
         int tileAy = globalY;
 
-        tileA[localY * BLOCK_SIZE + localX] = (tileAx < M && tileAy < K) ? A[tileAy * K + tileAx] : 0.0f;
+        tileA[localY * BLOCK_SIZE + localX] = (tileAx < K && tileAy < M) ? A[tileAy * K + tileAx] : 0.0f;
 
         // int tileBx = globalX;
         // int tileBy = i * BLOCK_SIZE + localY;
@@ -213,7 +213,7 @@ __global__ void tiling_matmul_row_based_kernel(const float* A, const float* B, f
         }
 
         int tileBxt = (numTiles - 1) * BLOCK_SIZE + localX;
-        tileB[localY * numTiles * BLOCK_SIZE + (numTiles - 1) * BLOCK_SIZE + localX] = (tileBxt < K && tileByt < N) ? B[tileByt * N + tileBxt] : 0.0f;
+        tileB[localY * numTiles * BLOCK_SIZE + (numTiles - 1) * BLOCK_SIZE + localX] = (tileBxt < N && tileByt < K) ? B[tileByt * N + tileBxt] : 0.0f;
 
         __syncthreads();
 
