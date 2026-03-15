@@ -96,9 +96,7 @@ Matrix Matrix::cuBLAS(const Matrix& other) {
     cudaDeviceSynchronize();
     auto end = std::chrono::high_resolution_clock::now();
     result.copy_to_host();
-
     cublasDestroy(handle);
-
     return result;
 }
 
@@ -220,7 +218,7 @@ bool operator==(const Matrix& X, const Matrix& Y) {
             max_diff = diff;
         }
     }
-    // std::cout << "Maximum difference between matrices: " << max_diff << std::endl;
+    std::cout << "Maximum difference between matrices: " << max_diff << std::endl;
     return max_diff < 1e-4f; // Allow for a small numerical tolerance
 }
 
