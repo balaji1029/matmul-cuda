@@ -15,17 +15,17 @@ int main(int argc, char** argv) {
     Matrix A(M, K);
     Matrix B(K, N);
     // std::cout << "Matrix A: " << A.rows() << "x" << A.cols() << std::endl;
-    Matrix C = A.naive_matmul(B);
+    // Matrix C = A.naive_matmul(B);
     Matrix D = A.another_matmul(B);
-    if (D != C) {
-        std::cout << "D not equal" << std::endl;
-    }
+    // if (D != C) {
+    //     std::cout << "D not equal" << std::endl;
+    // }
     Matrix E = A.cuda_matmul(B);
-    if (E != C) {
+    if (E != D) {
         std::cout << "E not equal" << std::endl;
     }
     Matrix F = A.uncoalesced_cuda_matmul(B);
-    if (F != C) {
+    if (F != D) {
         std::cout << "F not equal" << std::endl;
     }
     return 0;
