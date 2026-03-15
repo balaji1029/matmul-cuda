@@ -186,7 +186,7 @@ __global__ void uncoalesced_matmul_kernel(const float* A, const float* B, float*
 
 __global__ void tiling_matmul_row_based_kernel(const float* A, const float* B, float* C, size_t M, size_t N, size_t K) {
     __shared__ float tileA[BLOCK_SIZE * BLOCK_SIZE];
-    __shared__ float tileB[BLOCK_SIZE * CEIL_DIV(R, BLOCK_SIZE) * BLOCK_SIZE];
+    __shared__ float tileB[BLOCK_SIZE * CEIL_DIV(ROW, BLOCK_SIZE) * BLOCK_SIZE];
     int localX = threadIdx.x;
     int localY = threadIdx.y;
 
