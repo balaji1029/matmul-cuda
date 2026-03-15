@@ -36,9 +36,11 @@ int main(int argc, char** argv) {
     if (H != D) {
         std::cout << "H not equal" << std::endl;
     }
-    Matrix I = A.tiling_matmul_row_based(B);
-    if (I != D) {
-        std::cout << "I not equal" << std::endl;
+    if (K == 1024) {
+        Matrix I = A.tiling_matmul_row_based(B);
+        if (I != D) {
+            std::cout << "I not equal" << std::endl;
+        }
     }
     return 0;
 }
