@@ -97,6 +97,8 @@ Matrix Matrix::cuBLAS(const Matrix& other) {
     auto end = std::chrono::high_resolution_clock::now();
     result.copy_to_host();
     cublasDestroy(handle);
+    std::chrono::duration<double> elapsed = end - start;
+    std::cout << "cuBLAS matrix multiplication took " << elapsed.count() * 1e9 << " nanoseconds" << std::endl;
     return result;
 }
 
