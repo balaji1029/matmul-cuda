@@ -7,7 +7,7 @@
 
 #define BLOCK_SIZE 32
 #define CEIL_DIV(a, b) (((a) + (b) - 1) / (b))
-#define ROW 1024
+#define ROW 512
 
 void Matrix::fill_random() {
     // std::random_device rd;
@@ -203,8 +203,8 @@ __global__ void tiling_matmul_row_based_kernel(const float* A, const float* B, f
 
         tileA[localY * BLOCK_SIZE + localX] = (tileAx < M && tileAy < K) ? A[tileAy * K + tileAx] : 0.0f;
 
-        int tileBx = globalX;
-        int tileBy = i * BLOCK_SIZE + localY;
+        // int tileBx = globalX;
+        // int tileBy = i * BLOCK_SIZE + localY;
         int tileByt = i * BLOCK_SIZE + localY;
 
         for (int t = 0; t < numTiles - 1; t++) {
