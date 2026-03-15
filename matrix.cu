@@ -92,7 +92,10 @@ Matrix Matrix::uncoalesced_cuda_matmul(const Matrix& other) {
     auto start = std::chrono::high_resolution_clock::now();
     uncoalesced_matmul_kernel << <gridSize, blockSize >> > (device_data_, other.device_data_, result.device_data_, rows_, other.cols_, cols_);
     cudaDeviceSynchronize();
-    auto end = std::chrono::high_resolution_clock::now();
+    if (cudaGetLastError() != cudaSuccess) {
+        auto end = std::chrono::high_resolution_clock::now();
+        std::cerr << "CUDA error: " << cudaGetErrorString(cudaGetLastError()) << std::endl;
+    }
     std::chrono::duration<double> elapsed = end - start;
     result.copy_to_host();
     // Log the time taken for the multiplication in nanoseconds
@@ -106,9 +109,13 @@ Matrix Matrix::cuda_matmul(const Matrix& other) {
     dim3 gridSize(CEIL_DIV(rows_, BLOCK_SIZE), CEIL_DIV(other.cols_, BLOCK_SIZE));
     std::cout << "Launching CUDA kernel with grid size (" << gridSize.x << ", " << gridSize.y << ") and block size (" << blockSize.x << ", " << blockSize.y << ")" << std::endl;
     auto start = std::chrono::high_resolution_clock::now();
-    matmul_kernel << <gridSize, blockSize >> > (device_data_, other.device_data_, result.device_data_, rows_, other.cols_, cols_);
+    matmul_kernel << <gridSize, blockSize >>> (device_data_, other.device_data_, result.device_data_, rows_, other.cols_, cols_);
     cudaDeviceSynchronize();
     auto end = std::chrono::high_resolution_clock::now();
+    cudaError_t err = cudaGetLastError();
+    if (err != cudaSuccess) {
+        std::cerr << "CUDA error: " << cudaGetErrorString(err) << std::endl;
+    }
     std::chrono::duration<double> elapsed = end - start;
     result.copy_to_host();
     // Log the time taken for the multiplication in nanoseconds
@@ -122,9 +129,13 @@ Matrix Matrix::another_matmul(const Matrix& other) {
     dim3 gridSize(CEIL_DIV(rows_, BLOCK_SIZE), CEIL_DIV(other.cols_, BLOCK_SIZE));
     std::cout << "Launching another CUDA kernel with grid size (" << gridSize.x << ", " << gridSize.y << ") and block size (" << blockSize.x << ", " << blockSize.y << ")" << std::endl;
     auto start = std::chrono::high_resolution_clock::now();
-    another_matmul_kernel << <gridSize, blockSize >> > (device_data_, other.device_data_, result.device_data_, rows_, other.cols_, cols_);
+    another_matmul_kernel << <gridSize, blockSize >>> (device_data_, other.device_data_, result.device_data_, rows_, other.cols_, cols_);
     cudaDeviceSynchronize();
     auto end = std::chrono::high_resolution_clock::now();
+    cudaError_t err = cudaGetLastError();
+    if (err != cudaSuccess) {
+        std::cerr << "CUDA kernel launch failed: " << cudaGetErrorString(err) << std::endl;
+    }
     std::chrono::duration<double> elapsed = end - start;
     result.copy_to_host();
     // Log the time taken for the multiplication in nanoseconds
