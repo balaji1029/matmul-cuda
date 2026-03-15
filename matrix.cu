@@ -288,6 +288,8 @@ Matrix Matrix::tiling_matmul(const Matrix& other) {
 
     tiling_matmul_kernel << < gridSize, blockSize >> > (device_data_, other.device_data_, result.device_data_, rows_, other.cols(), cols_);
 
+    cudaDeviceSynchronize();
+
     auto end = std::chrono::high_resolution_clock::now();
     cudaError_t err = cudaGetLastError();
     if (err != cudaSuccess) {
@@ -322,7 +324,7 @@ bool operator==(const Matrix& X, const Matrix& Y) {
             max_diff = diff;
         }
     }
-    std::cout << "Maximum difference between matrices: " << max_diff << std::endl;
+    // std::cout << "Maximum difference between matrices: " << max_diff << std::endl;
     return max_diff < 1e-3f; // Allow for a small numerical tolerance
 }
 
