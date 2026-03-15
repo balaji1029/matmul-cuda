@@ -60,6 +60,48 @@ Matrix Matrix::naive_matmul(const Matrix& other) {
 
 // }
 
+// Matrix Matrix::cuBLAS(const Matrix& other) {
+//     if (cols_ != other.rows_) {
+//         throw std::invalid_argument("Incompatible matrix dimensions");
+//     }
+
+//     Matrix result(rows_, other.cols_);
+
+//     cublasHandle_t handle;
+//     cublasCreate(&handle);
+
+//     float alpha = 1.0f;
+//     float beta = 0.0f;
+
+//     // C = A * B
+//     // cuBLAS expects column-major, so we compute:
+//     // C^T = B^T * A^T
+//     auto start = std::chrono::high_resolution_clock::now();
+//     cublasSgemm(
+//         handle,
+//         CUBLAS_OP_N, CUBLAS_OP_N,
+//         rows_,                 // m
+//         other.cols_,           // n
+//         cols_,                 // k
+//         &alpha,
+//         device_data_,          // A
+//         rows_,
+//         other.device_data_,    // B
+//         cols_,
+//         &beta,
+//         result.device_data_,   // C
+//         rows_
+//     );
+//     cudaDeviceSynchronize();
+//     auto end = std::chrono::high_resolution_clock::now();
+//     result.copy_to_host();
+//     cublasDestroy(handle);
+//     std::chrono::duration<double> elapsed = end - start;
+    
+//     std::cout << "cuBLAS matrix multiplication took " << elapsed.count() * 1e9 << " nanoseconds" << std::endl;
+//     return result;
+// }
+
 Matrix Matrix::cuBLAS(const Matrix& other) {
     if (cols_ != other.rows_) {
         throw std::invalid_argument("Incompatible matrix dimensions");
@@ -71,40 +113,41 @@ Matrix Matrix::cuBLAS(const Matrix& other) {
     cublasCreate(&handle);
 
     float alpha = 1.0f;
-    float beta = 0.0f;
+    float beta  = 0.0f;
 
-    // C = A * B
-    // cuBLAS expects column-major, so we compute:
-    // C^T = B^T * A^T
     auto start = std::chrono::high_resolution_clock::now();
+
     cublasSgemm(
         handle,
         CUBLAS_OP_N, CUBLAS_OP_N,
-        rows_,                 // m
-        other.cols_,           // n
-        cols_,                 // k
-        &alpha,
-        device_data_,          // A
+        other.cols_,
         rows_,
-        other.device_data_,    // B
         cols_,
+        &alpha,
+        other.device_data_, other.cols_,
+        device_data_, cols_,
         &beta,
-        result.device_data_,   // C
-        rows_
+        result.device_data_, other.cols_
     );
 
     cudaDeviceSynchronize();
+
     auto end = std::chrono::high_resolution_clock::now();
+
     result.copy_to_host();
+
     cublasDestroy(handle);
+
     std::chrono::duration<double> elapsed = end - start;
-    std::cout << "cuBLAS matrix multiplication took " << elapsed.count() * 1e9 << " nanoseconds" << std::endl;
+    std::cout << "cuBLAS matrix multiplication took "
+              << elapsed.count() * 1e9 << " nanoseconds" << std::endl;
+
     return result;
 }
 
 __global__ void matmul_kernel(const float* A, const float* B, float* C, size_t M, size_t N, size_t K) {
-    int x = (blockIdx.x * BLOCK_SIZE) + threadIdx.x;
-    int y = (blockIdx.y * BLOCK_SIZE) + threadIdx.y;
+    int x = (blockIdx.x * blockDim.x) + threadIdx.x;
+    int y = (blockIdx.y * blockDim.y) + threadIdx.y;
     if (x < M && y < N) {
         float sum = 0.0f;
         for (size_t k = 0; k < K; ++k) {
@@ -146,7 +189,7 @@ Matrix Matrix::uncoalesced_cuda_matmul(const Matrix& other) {
     dim3 gridSize(CEIL_DIV(rows_, BLOCK_SIZE), CEIL_DIV(other.cols_, BLOCK_SIZE));
     std::cout << "Launching uncoalesced CUDA kernel with grid size (" << gridSize.x << ", " << gridSize.y << ") and block size (" << blockSize.x << ", " << blockSize.y << ")" << std::endl;
     auto start = std::chrono::high_resolution_clock::now();
-    uncoalesced_matmul_kernel << <gridSize, blockSize >> > (device_data_, other.device_data_, result.device_data_, rows_, other.cols_, cols_);
+    uncoalesced_matmul_kernel << <gridSize, blockSize >>> (device_data_, other.device_data_, result.device_data_, rows_, other.cols_, cols_);
     cudaDeviceSynchronize();
     auto end = std::chrono::high_resolution_clock::now();
     if (cudaGetLastError() != cudaSuccess) {
