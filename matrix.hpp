@@ -29,4 +29,10 @@ public:
     Matrix uncoalesced_cuda_matmul(const Matrix& other);
     Matrix another_matmul(const Matrix& other);
     Matrix cuda_matmul(const Matrix& other);
+    void copy_to_device() {
+        cudaMemcpy(device_data_, data_.data(), rows_ * cols_ * sizeof(float), cudaMemcpyHostToDevice);
+    }
+    void copy_to_host() {
+        cudaMemcpy(data_.data(), device_data_, rows_ * cols_ * sizeof(float), cudaMemcpyDeviceToHost);
+    }
 };
