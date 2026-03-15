@@ -200,12 +200,12 @@ __global__ void tiling_matmul_kernel(const float* A, const float* B, float* C, s
         int tileAx = i * BLOCK_SIZE + localX;
         int tileAy = globalY;
 
-        tileA[localY * BLOCK_SIZE + localX] = (tileAx < M && tileAy < K) ? A[tileAy * BLOCK_SIZE + tileAx] : 0.0f;
+        tileA[localY * BLOCK_SIZE + localX] = (tileAx < M && tileAy < K) ? A[tileAy * K + tileAx] : 0.0f;
 
         int tileBx = globalX;
         int tileBy = i * BLOCK_SIZE + localY;
 
-        tileB[localY * BLOCK_SIZE + localX] = (tileBx < K && tileBy < N) ? B[tileBy * BLOCK_SIZE + tileBx] : 0.0f;
+        tileB[localY * BLOCK_SIZE + localX] = (tileBx < K && tileBy < N) ? B[tileBy * N + tileBx] : 0.0f;
 
         __syncthreads();
 
@@ -283,11 +283,6 @@ Matrix Matrix::tiling_matmul(const Matrix& other) {
     Matrix result(rows_, other.cols_);
     dim3 blockSize(BLOCK_SIZE, BLOCK_SIZE);
     dim3 gridSize(CEIL_DIV(rows_, BLOCK_SIZE), CEIL_DIV(other.cols_, BLOCK_SIZE));
-
-    // Pointer to store the tile data on the device
-    float* tileA, * tileB;
-    size_t tileSize = BLOCK_SIZE * BLOCK_SIZE * sizeof(float);
-
     std::cout << "Launching tiling CUDA kernel with grid size (" << gridSize.x << ", " << gridSize.y << ") and block size (" << blockSize.x << ", " << blockSize.y << ")" << std::endl;
     auto start = std::chrono::high_resolution_clock::now();
 
