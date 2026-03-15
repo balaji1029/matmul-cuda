@@ -183,7 +183,9 @@ __global__ void uncoalesced_matmul_kernel(const float* A, const float* B, float*
     }
 }
 
-__global__ void tiling_matmul_kernel(const float* A, const float* B, float* C, size_t M, size_t N, size_t K, float* tileA, float* tileB) {
+__global__ void tiling_matmul_kernel(const float* A, const float* B, float* C, size_t M, size_t N, size_t K) {
+    __shared__ float tileA[BLOCK_SIZE * BLOCK_SIZE];
+    __shared__ float tileB[BLOCK_SIZE * BLOCK_SIZE];
     int localX = threadIdx.x;
     int localY = threadIdx.y;
 
@@ -285,13 +287,11 @@ Matrix Matrix::tiling_matmul(const Matrix& other) {
     // Pointer to store the tile data on the device
     float* tileA, * tileB;
     size_t tileSize = BLOCK_SIZE * BLOCK_SIZE * sizeof(float);
-    cudaMalloc(&tileA, tileSize);
-    cudaMalloc(&tileB, tileSize);
 
     std::cout << "Launching tiling CUDA kernel with grid size (" << gridSize.x << ", " << gridSize.y << ") and block size (" << blockSize.x << ", " << blockSize.y << ")" << std::endl;
     auto start = std::chrono::high_resolution_clock::now();
 
-    tiling_matmul_kernel << < gridSize, blockSize >> > (device_data_, other.device_data_, result.device_data_, rows_, other.cols(), cols_, tileA, tileB);
+    tiling_matmul_kernel << < gridSize, blockSize >> > (device_data_, other.device_data_, result.device_data_, rows_, other.cols(), cols_);
 
     auto end = std::chrono::high_resolution_clock::now();
     cudaError_t err = cudaGetLastError();
