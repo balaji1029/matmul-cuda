@@ -4,6 +4,7 @@
 #include <chrono>
 #include <cuda_runtime.h>
 
+#define BLOCK_SIZE 32
 
 void Matrix::fill_random() {
     // std::random_device rd;
@@ -44,8 +45,8 @@ Matrix Matrix::naive_matmul(const Matrix& other) {
 }
 
 __global__ void matmul_kernel(const float* A, const float* B, float* C, size_t M, size_t N, size_t K) {
-    int x = (blockIdx.x * 32) + (threadIdx.x / 32);
-    int y = (blockIdx.y * 32) + (threadIdx.x % 32);
+    int x = (blockIdx.x * BLOCK_SIZE) + (threadIdx.x / BLOCK_SIZE);
+    int y = (blockIdx.y * BLOCK_SIZE) + (threadIdx.x % BLOCK_SIZE);
     if (x < M && y < N) {
         float sum = 0.0f;
         for (size_t k = 0; k < K; ++k) {
@@ -69,8 +70,8 @@ __global__ void uncoalesced_matmul_kernel(const float* A, const float* B, float*
 
 Matrix Matrix::uncoalesced_cuda_matmul(const Matrix& other) {
     Matrix result(rows_, other.cols_);
-    dim3 blockSize(16, 16);
-    dim3 gridSize((other.cols_ + blockSize.x - 1) / blockSize.x, (rows_ + blockSize.y - 1) / blockSize.y);
+    dim3 blockSize(BLOCK_SIZE, BLOCK_SIZE);
+    dim3 gridSize((rows_ + blockSize.x - 1) / blockSize.x, (other.cols_ + blockSize.y - 1) / blockSize.y);
     std::cout << "Launching uncoalesced CUDA kernel with grid size (" << gridSize.x << ", " << gridSize.y << ") and block size (" << blockSize.x << ", " << blockSize.y << ")" << std::endl;
     auto start = std::chrono::high_resolution_clock::now();
     uncoalesced_matmul_kernel<<<gridSize, blockSize>>>(device_data_, other.device_data_, result.device_data_, rows_, other.cols_, cols_);
@@ -84,8 +85,8 @@ Matrix Matrix::uncoalesced_cuda_matmul(const Matrix& other) {
 
 Matrix Matrix::cuda_matmul(const Matrix& other) {
     Matrix result(rows_, other.cols_);
-    dim3 gridSize(rows_ / 32 + 1, other.cols_ / 32 + 1);
-    dim3 blockSize(32, 32);
+    dim3 blockSize(BLOCK_SIZE, BLOCK_SIZE);
+    dim3 gridSize(rows_ / BLOCK_SIZE + 1, other.cols_ / BLOCK_SIZE + 1);
     std::cout << "Launching CUDA kernel with grid size (" << gridSize.x << ", " << gridSize.y << ") and block size (" << blockSize.x << ", " << blockSize.y << ")" << std::endl;
     auto start = std::chrono::high_resolution_clock::now();
     matmul_kernel<<<gridSize, blockSize>>>(device_data_, other.device_data_, result.device_data_, rows_, other.cols_, cols_);
