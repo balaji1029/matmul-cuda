@@ -195,7 +195,7 @@ __global__ void tiling_matmul_row_based_kernel(const float* A, const float* B, f
 
     int numTiles = CEIL_DIV(K, BLOCK_SIZE);
 
-    float ans[CEIL_DIV(K, BLOCK_SIZE)] = {0.0f};
+    float ans[CEIL_DIV(ROW, BLOCK_SIZE)] = {0.0f};
 
     for (int i = 0; i < numTiles; i++) {
         int tileAx = i * BLOCK_SIZE + localX;
