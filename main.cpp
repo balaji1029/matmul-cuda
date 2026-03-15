@@ -2,10 +2,18 @@
 
 #include "matrix.hpp"
 
-int main() {
+int main(int argc, char** argv) {
     // std::cout << "Creating matrices A and B..." << std::endl;
-    Matrix A(1000, 1000);
-    Matrix B(1000, 1000);
+    int M, N, K;
+    if (argc == 4) {
+        M = std::atoi(argv[1]);
+        N = std::atoi(argv[2]);
+        K = std::atoi(argv[3]);
+    } else {
+        M = N = K = 1000;
+    }
+    Matrix A(M, K);
+    Matrix B(K, N);
     // std::cout << "Matrix A: " << A.rows() << "x" << A.cols() << std::endl;
     Matrix C = A.naive_matmul(B);
     Matrix D = A.another_matmul(B);
