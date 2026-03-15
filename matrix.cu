@@ -302,6 +302,7 @@ Matrix Matrix::tiling_matmul(const Matrix& other) {
     result.copy_to_host();
     // Log the time taken for the multiplication in nanoseconds
     std::cout << "Tiling CUDA matrix multiplication took " << elapsed.count() * 1e9 << " nanoseconds" << std::endl;
+    result.copy_to_host();
     return result;
 }
 

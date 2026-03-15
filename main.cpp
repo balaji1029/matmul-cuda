@@ -32,5 +32,9 @@ int main(int argc, char** argv) {
     if (G != D) {
         std::cout << "G not equal" << std::endl;
     }
+    Matrix H = A.tiling_matmul(B);
+    if (H != D) {
+        std::cout << "H not equal" << std::endl;
+    }
     return 0;
 }
