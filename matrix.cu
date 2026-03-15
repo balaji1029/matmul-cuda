@@ -56,6 +56,18 @@ __global__ void matmul_kernel(const float* A, const float* B, float* C, size_t M
     }
 }
 
+__global__ void another_matmul_kernel(const float* A, const float* B, float* C, size_t M, size_t N, size_t K) {
+    int x = (blockIdx.x * BLOCK_SIZE) + (threadIdx.x % BLOCK_SIZE);
+    int y = (blockIdx.y * BLOCK_SIZE) + (threadIdx.x / BLOCK_SIZE);
+    if (x < M && y < N) {
+        float sum = 0.0f;
+        for (size_t k = 0; k < K; ++k) {
+            sum += A[x * K + k] * B[k * N + y];
+        }
+        C[x * N + y] = sum;
+    }
+}
+
 __global__ void uncoalesced_matmul_kernel(const float* A, const float* B, float* C, size_t M, size_t N, size_t K) {
     int x = blockIdx.x * blockDim.x + threadIdx.x;
     int y = blockIdx.y * blockDim.y + threadIdx.y;
@@ -95,5 +107,20 @@ Matrix Matrix::cuda_matmul(const Matrix& other) {
     std::chrono::duration<double> elapsed = end - start;
     // Log the time taken for the multiplication in nanoseconds
     std::cout << "CUDA matrix multiplication took " << elapsed.count() * 1e9 << " nanoseconds" << std::endl;
+    return result;
+}
+
+Matrix Matrix::another_matmul(const Matrix& other) {
+    Matrix result(rows_, other.cols_);
+    dim3 blockSize(BLOCK_SIZE, BLOCK_SIZE);
+    dim3 gridSize(rows_ / BLOCK_SIZE + 1, other.cols_ / BLOCK_SIZE + 1);
+    std::cout << "Launching another CUDA kernel with grid size (" << gridSize.x << ", " << gridSize.y << ") and block size (" << blockSize.x << ", " << blockSize.y << ")" << std::endl;
+    auto start = std::chrono::high_resolution_clock::now();
+    another_matmul_kernel<<<gridSize, blockSize>>>(device_data_, other.device_data_, result.device_data_, rows_, other.cols_, cols_);
+    cudaDeviceSynchronize();
+    auto end = std::chrono::high_resolution_clock::now();
+    std::chrono::duration<double> elapsed = end - start;
+    // Log the time taken for the multiplication in nanoseconds
+    std::cout << "Another CUDA matrix multiplication took " << elapsed.count() * 1e9 << " nanoseconds" << std::endl;
     return result;
 }

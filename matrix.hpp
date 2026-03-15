@@ -27,5 +27,6 @@ public:
     float& operator[](size_t index) { return data_[index]; }
     Matrix naive_matmul(const Matrix& other);
     Matrix uncoalesced_cuda_matmul(const Matrix& other);
+    Matrix another_matmul(const Matrix& other);
     Matrix cuda_matmul(const Matrix& other);
 };
