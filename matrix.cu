@@ -92,8 +92,8 @@ Matrix Matrix::uncoalesced_cuda_matmul(const Matrix& other) {
     auto start = std::chrono::high_resolution_clock::now();
     uncoalesced_matmul_kernel << <gridSize, blockSize >> > (device_data_, other.device_data_, result.device_data_, rows_, other.cols_, cols_);
     cudaDeviceSynchronize();
+    auto end = std::chrono::high_resolution_clock::now();
     if (cudaGetLastError() != cudaSuccess) {
-        auto end = std::chrono::high_resolution_clock::now();
         std::cerr << "CUDA error: " << cudaGetErrorString(cudaGetLastError()) << std::endl;
     }
     std::chrono::duration<double> elapsed = end - start;
