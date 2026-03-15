@@ -76,7 +76,7 @@ Matrix Matrix::cuBLAS(const Matrix& other) {
     // C = A * B
     // cuBLAS expects column-major, so we compute:
     // C^T = B^T * A^T
-
+    auto start = std::chrono::high_resolution_clock::now();
     cublasSgemm(
         handle,
         CUBLAS_OP_N, CUBLAS_OP_N,
@@ -94,7 +94,7 @@ Matrix Matrix::cuBLAS(const Matrix& other) {
     );
 
     cudaDeviceSynchronize();
-
+    auto end = std::chrono::high_resolution_clock::now();
     result.copy_to_host();
 
     cublasDestroy(handle);
@@ -206,17 +206,6 @@ Matrix Matrix::transpose(const Matrix& other) {
             result[j * result.cols() + i] = other[i * other.cols() + j];
         }
     }
-    return result;
-}
-
-Matrix Matrix::cuBLAS(const Matrix& other) {
-    // Run cuBLAS matrix multiplication here
-    cublasStatus_t stat;
-    cublasHandle_t handle;
-    stat = cublasCreate(&handle);
-    stat = cublasSetMatrix (M, N, sizeof(*a), a, M, devPtrA, M);
-
-
     return result;
 }
 
