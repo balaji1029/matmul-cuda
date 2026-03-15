@@ -190,7 +190,7 @@ __global__ void tiling_matmul_kernel(const float* A, const float* B, float* C, s
     int globalX = blockDim.x * blockIdx.x + localX;
     int globalY = blockDim.y * blockIdx.y + localY;
 
-    int numTiles = CIELDIV(K, BLOCK_SIZE);
+    int numTiles = CEIL_DIV(K, BLOCK_SIZE);
 
     float ans = 0.0f;
 
