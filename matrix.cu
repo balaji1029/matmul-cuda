@@ -246,7 +246,7 @@ __global__ void tiling_matmul_col_based_kernel(const float* A, const float* B, f
         // tileA[localY][localX] = (tileAx < K && tileAy < M) ? A[tileAy * K + tileAx] : 0.0f;
 
         for (int k=0; k < NELEM; k++) {
-            tileA[localY][localX] = ((tileAy + k * BLOCK_SIZE) < M && tileAx < K) ? A[(tileAy + k * BLOCK_SIZE) * K + tileAx] : 0.0f;
+            tileA[localY + k * BLOCK_SIZE][localX] = ((tileAy + k * BLOCK_SIZE) < M && tileAx < K) ? A[(tileAy + k * BLOCK_SIZE) * K + tileAx] : 0.0f;
         }
 
         int tileBx = globalX;
