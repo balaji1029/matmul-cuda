@@ -270,7 +270,7 @@ __global__ void tiling_matmul_col_based_kernel(const float* A, const float* B, f
     }
 
     for (int k = 0; k < NELEM; k++)
-        if (globalY < M && (globalX + k * BLOCK_SIZE) < N)
+        if ((globalY + k * BLOCK_SIZE) < M && globalX < N)
             C[(globalY + k * BLOCK_SIZE) * N + globalX] = ans[k];
 }
 
@@ -422,7 +422,7 @@ Matrix Matrix::tiling_matmul_row_based(const Matrix& other) {
     Matrix result(rows_, other.cols_);
     dim3 blockSize(BLOCK_SIZE, BLOCK_SIZE);
     dim3 gridSize(CEIL_DIV(other.cols_, NELEM * BLOCK_SIZE), CEIL_DIV(rows_, BLOCK_SIZE));
-    std::cout << "Launching tiling CUDA kernel with grid size (" << gridSize.x << ", " << gridSize.y << ") and block size (" << blockSize.x << ", " << blockSize.y << ")" << std::endl;
+    std::cout << "Launching tiling row based CUDA kernel with grid size (" << gridSize.x << ", " << gridSize.y << ") and block size (" << blockSize.x << ", " << blockSize.y << ")" << std::endl;
     auto start = std::chrono::high_resolution_clock::now();
 
     tiling_matmul_row_based_kernel << < gridSize, blockSize >> > (device_data_, other.device_data_, result.device_data_, rows_, other.cols(), cols_);
@@ -437,7 +437,7 @@ Matrix Matrix::tiling_matmul_row_based(const Matrix& other) {
     std::chrono::duration<double> elapsed = end - start;
     result.copy_to_host();
     // Log the time taken for the multiplication in nanoseconds
-    std::cout << "Tiling CUDA matrix multiplication took " << elapsed.count() * 1e9 << " nanoseconds" << std::endl;
+    std::cout << "Tiling row based CUDA matrix multiplication took " << elapsed.count() * 1e9 << " nanoseconds" << std::endl;
     result.copy_to_host();
     return result;
 }
