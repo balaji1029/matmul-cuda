@@ -5,10 +5,7 @@
 #include <cuda_runtime.h>
 #include <cublas_v2.h>
 
-#define BLOCK_SIZE 32
-#define CEIL_DIV(a, b) (((a) + (b) - 1) / (b))
-#define NELEM 3
-#define ROW 512
+#include "utils.hpp"
 
 void Matrix::fill_random() {
     // std::random_device rd;
@@ -194,9 +191,6 @@ __global__ void tiling_matmul_row_based_kernel(const float* A, const float* B, f
 
     int globalX = blockDim.x * (blockIdx.x * NELEM) + localX;
     int globalY = blockDim.y * blockIdx.y + localY;
-
-    int numTiles_A = CEIL_DIV(K, BLOCK_SIZE);
-    int numTiles_B = CEIL_DIV(N, BLOCK_SIZE * NELEM);
 
     float ans[NELEM] = { 0.0f };
 
