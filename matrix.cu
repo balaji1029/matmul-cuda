@@ -348,7 +348,7 @@ Matrix Matrix::tiling_matmul(const Matrix& other) {
 Matrix Matrix::tiling_matmul_row_based(const Matrix& other) {
     Matrix result(rows_, other.cols_);
     dim3 blockSize(BLOCK_SIZE, BLOCK_SIZE);
-    dim3 gridSize(CEIL_DIV(other.cols_, NELEM * BLOCK_SIZE), CEIL_DIV(rows_, BLOCK_SIZE));
+    dim3 gridSize(CEIL_DIV(rows_, BLOCK_SIZE), CEIL_DIV(other.cols_, NELEM * BLOCK_SIZE));
     std::cout << "Launching tiling CUDA kernel with grid size (" << gridSize.x << ", " << gridSize.y << ") and block size (" << blockSize.x << ", " << blockSize.y << ")" << std::endl;
     auto start = std::chrono::high_resolution_clock::now();
 
