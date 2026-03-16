@@ -227,7 +227,7 @@ __global__ void tiling_matmul_row_based_kernel(const float* A, const float* B, f
 
 __global__ void tiling_matmul_col_based_kernel(const float* A, const float* B, float* C, size_t M, size_t N, size_t K) {
     __shared__ float tileA[NELEM * BLOCK_SIZE][BLOCK_SIZE];
-    __shared__ float tileB[BLOCK_SIZE][NELEM];
+    __shared__ float tileB[BLOCK_SIZE][BLOCK_SIZE];
 
     int localX = threadIdx.x;
     int localY = threadIdx.y;
