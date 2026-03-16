@@ -38,10 +38,14 @@ int main(int argc, char** argv) {
         std::cout << "H not equal" << std::endl;
     }
     // if (K == BLOCK_SIZE * NELEM) {
-        Matrix I = A.tiling_matmul_row_based(B);
-        if (I != D) {
-            std::cout << "I not equal" << std::endl;
-        }
+    Matrix I = A.tiling_matmul_row_based(B);
+    if (I != D) {
+        std::cout << "I not equal" << std::endl;
+    }
     // }
+    Matrix J = A.tiling_matmul_col_based(B);
+    if (J != D) {
+        std::cout << "I not equal" << std::endl;
+    }
     return 0;
 }
