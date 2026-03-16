@@ -271,7 +271,7 @@ __global__ void tiling_matmul_col_based_kernel(const float* A, const float* B, f
 
     for (int k = 0; k < NELEM; k++)
         if (globalY < M && (globalX + k * BLOCK_SIZE) < N)
-            C[globalY * N + (globalX + k * BLOCK_SIZE)] = ans[k];
+            C[(globalY + k * BLOCK_SIZE) * N + globalX] = ans[k];
 }
 
 __global__ void tiling_matmul_kernel(const float* A, const float* B, float* C, size_t M, size_t N, size_t K) {
