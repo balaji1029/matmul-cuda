@@ -262,7 +262,7 @@ __global__ void tiling_matmul_col_based_kernel(const float* A, const float* B, f
 
         for (int j = 0; j < BLOCK_SIZE; j++) {
             for (int k = 0; k < NELEM; k++) {
-                ans[k] += tileA[localY][j] * tileB[j][localX + k * BLOCK_SIZE];
+                ans[k] += tileA[localY + k * BLOCK_SIZE][j] * tileB[j][localX];
             }
         }
 
